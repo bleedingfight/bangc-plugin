@@ -7,8 +7,6 @@ if exists("b:current_syntax")
     finish
 endif
 
-echom "Bangc syntax highlighting code will go here."
-
 let b:current_syntax = "mlu"
 let s:ft = matchstr(&ft, '^\([^.]\)\+')
 let s:cpo_save = &cpo
@@ -107,7 +105,7 @@ syn match       bangcSpecialCharacter display "L\='\\\o\{1,3}'"
 syn match       bangcSpecialCharacter display "'\\x\x\{1,2}'"
 syn match       bangcSpecialCharacter display "L'\\x\x\+'"
 
-if (s:ft ==# "c" && !exists("c_no_c11")) || (s:in_cpp_family && !exists("cpp_no_cpp11"))
+if (s:ft ==# "mlu" && !exists("c_no_c11")) || (s:in_cpp_family && !exists("cpp_no_cpp11"))
   " ISO C11 or ISO C++ 11
   if exists("c_no_cformat")
     syn region  bangcString         start=+\%(U\|u8\=\)"+ skip=+\\\\\|\\"+ end=+"+ contains=bangcSpecial,@Spell extend
@@ -198,7 +196,7 @@ else
   syn match     bangcErrInBracket   display contained "[);{}]\|<%\|%>"
 endif
 
-if s:ft ==# 'c' || exists("cpp_no_cpp11")
+if s:ft ==# 'mlu' || exists("cpp_no_cpp11")
   syn region    bangcBadBlock       keepend start="{" end="}" contained containedin=bangcParen,bangcBracket,bangcBadBlock transparent fold
 endif
 
@@ -339,6 +337,16 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword bangcConstant CHAR_MAX INT_MAX LONG_MAX SHRT_MAX
   syn keyword bangcConstant SCHAR_MIN SINT_MIN SLONG_MIN SSHRT_MIN
   syn keyword bangcConstant SCHAR_MAX SINT_MAX SLONG_MAX SSHRT_MAX
+  syn keyword bangcConstant CNRT_RET_SUCCESS CNRT_RET_ERR_INVALID CNRT_RET_ERR_INVALIDCNRT_RET_ERR_NODEV
+  syn keyword bangcConstant cnrtSuccess cnrtErrorBusy cnrtDim3_t
+  " Many more errors are de ined, but only these are listed in the maunal
+  syn keyword bangcConstant cnErrorMemoryAllocation
+  syn keyword bangcConstant cnErrorInvalidDevicePointer
+  syn keyword bangcConstant cnErrorInvalidSymbol
+  syn keyword bangcConstant cnErrorMixedDeviceExecution
+  syn keyword bangcConstant cnrtMemcpyHostToDev cnrtMemcpyHostToDev
+  syn keyword bangcConstant cnMemcpyHostToDevice
+
   if !exists("c_no_c99")
     syn keyword bangcConstant __func__ __VA_ARGS__
     syn keyword bangcConstant LLONG_MIN LLONG_MAX ULLONG_MAX
@@ -436,7 +444,7 @@ syn region      bangcPragma         start="^\s*#pragma\s\+region\>" end="^\s*#pr
 
 " Highlight User Labels
 syn cluster     bangcMultiGroup     contains=bangcIncluded,bangcSpecial,bangcCommentSkip,bangcCommentString,bangcComment2String,@bangcCommentGroup,bangcCommentStartError,bangcUserCont,bangcUserLabel,bangcBitField,bangcOctalZero,bangcCppOutWrapper,bangcCppInWrapper,@bangcCppOutInGroup,bangcFormat,bangcNumber,bangcFloat,bangcOctal,bangcOctalError,bangcNumbersCom,bangcCppParen,bangcCppBracket,bangcCppString
-if s:ft ==# 'c' || exists("cpp_no_cpp11")
+if s:ft ==# 'mlu' || exists("cpp_no_cpp11")
   syn region    bangcMulti          transparent start='?' skip='::' end=':' contains=ALLBUT,@bangcMultiGroup,@Spell,@bangcStringGroup
 endif
 " Avoid matching foo::bar() in C++ by requiring that the next char is not ':'
@@ -471,6 +479,32 @@ if exists("c_curly_error")
 else
   exec "syn sync ccomment bangcComment minlines=" . b:c_minlines
 endif
+
+syn keyword cnStorageClass	__mlu_device__ __mlu_func__ __mlu_builtin__ __mlu_entry__ __mlu_global__
+syn keyword cnStorageClass	__nram__ __wram__ __mlu_shared__ __ldram__
+syn keyword cnStorageClass	__inline__ __align__ __thread__
+"syn keyword cnStorageClass	__import__ __export__ __location__
+syn keyword cnStructure	template
+syn keyword cnType		char1 char2 char3 char4
+syn keyword cnType		uchar1 uchar2 uchar3 uchar4
+syn keyword cnType		short1 short2 short3 short4
+syn keyword cnType		ushort1 ushort2 ushort3 ushort4
+syn keyword cnType		int_t uint8_t int16_t uint16_t int32_t uint32_t half float char bfloat16_t int8 int16 bool
+syn keyword cnType		long1 long2 long3 long4
+syn keyword cnType		ulong1 ulong2 ulong3 ulong4
+syn keyword cnType		float1 float2 float3 float4
+syn keyword cnType		ufloat1 ufloat2 ufloat3 ufloat4
+syn keyword cnType		dim3 texture textureReference
+syn keyword cnType		cnError_t cnDeviceProp cnMemcpyKind
+syn keyword cnType		cnArray cnChannelFormatKind
+syn keyword cnType		cnChannelFormatDesc cnTextureAddressMode
+syn keyword cnType		cnTextureFilterMode cnTextureReadMode
+syn keyword cnVariable	coreId clusterId coreDim  taskDimX taskDimY taskDimZ taskDim taskIdX taskIdY taskIdZ taskId 
+
+hi def link cnStorageClass	StorageClass
+hi def link cnStructure	Structure
+hi def link cnType		Type
+hi def link cnVariable	Identifier
 
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
